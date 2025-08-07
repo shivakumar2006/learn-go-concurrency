@@ -1,54 +1,93 @@
 // // concurrency in go using go routines
 
-// waitgroup and mutex
-
 package main
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 )
 
-var wg sync.WaitGroup
-var mut sync.Mutex
-
-var response = []string{"text"}
-
 func main() {
 
-	websites := []string{
-		"https://go.dev",
-		"https://google.com",
-		"https://fb.com",
-		"https://github.com",
-	}
+	wg := &sync.WaitGroup{}
 
-	for _, web := range websites {
-		wg.Add(1)
-		go getStatusCode(web)
-	}
+	score := []int{0}
+
+	wg.Add(3)
+
+	go func(wg *sync.WaitGroup) {
+		fmt.Println("One R")
+		score = append(score, 1)
+		wg.Done()
+	}(wg)
+
+	go func(wg *sync.WaitGroup) {
+		fmt.Println("TWO R")
+		score = append(score, 2)
+		wg.Done()
+	}(wg)
+
+	go func(wg *sync.WaitGroup) {
+		fmt.Println("Three R")
+		score = append(score, 3)
+		wg.Done()
+	}(wg)
 
 	wg.Wait()
 
-	fmt.Println("websites successfully run")
-	fmt.Println(response)
+	fmt.Println("All the goroutine fucntion runs successfully;")
+	fmt.Println(score)
 }
 
-func getStatusCode(endpoint string) {
-	defer wg.Done()
+// waitgroup and mutex
 
-	res, err := http.Get(endpoint)
+// package main
 
-	if err != nil {
-		fmt.Println("OOPS, something went wrong...")
-	} else {
-		mut.Lock()
-		response = append(response, endpoint)
-		mut.Unlock()
-		fmt.Printf("%d status code for %s\n", res.StatusCode, endpoint)
-	}
-}
+// import (
+// 	"fmt"
+// 	"net/http"
+// 	"sync"
+// )
+
+// var wg sync.WaitGroup
+// var mut sync.Mutex
+
+// var response = []string{"text"}
+
+// func main() {
+
+// 	websites := []string{
+// 		"https://go.dev",
+// 		"https://google.com",
+// 		"https://fb.com",
+// 		"https://github.com",
+// 	}
+
+// 	for _, web := range websites {
+// 		wg.Add(1)
+// 		go getStatusCode(web)
+// 	}
+
+// 	wg.Wait()
+
+// 	fmt.Println("websites successfully run")
+// 	fmt.Println(response)
+// }
+
+// func getStatusCode(endpoint string) {
+// 	defer wg.Done()
+
+// 	res, err := http.Get(endpoint)
+
+// 	if err != nil {
+// 		fmt.Println("OOPS, something went wrong...")
+// 	} else {
+// 		mut.Lock()
+// 		response = append(response, endpoint)
+// 		mut.Unlock()
+// 		fmt.Printf("%d status code for %s\n", res.StatusCode, endpoint)
+// 	}
+// }
 
 // package main
 
