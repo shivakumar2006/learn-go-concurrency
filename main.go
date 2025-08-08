@@ -10,28 +10,35 @@ import (
 func main() {
 
 	wg := &sync.WaitGroup{}
+	mut := &sync.Mutex{}
 
 	score := []int{0}
 
 	wg.Add(3)
 
-	go func(wg *sync.WaitGroup) {
+	go func(wg *sync.WaitGroup, mut *sync.Mutex) {
 		fmt.Println("One R")
+		mut.Lock()
 		score = append(score, 1)
+		mut.Unlock()
 		wg.Done()
-	}(wg)
+	}(wg, mut)
 
-	go func(wg *sync.WaitGroup) {
+	go func(wg *sync.WaitGroup, mut *sync.Mutex) {
 		fmt.Println("TWO R")
+		mut.Lock()
 		score = append(score, 2)
+		mut.Unlock()
 		wg.Done()
-	}(wg)
+	}(wg, mut)
 
-	go func(wg *sync.WaitGroup) {
+	go func(wg *sync.WaitGroup, mut *sync.Mutex) {
 		fmt.Println("Three R")
+		mut.Lock()
 		score = append(score, 3)
+		mut.Unlock()
 		wg.Done()
-	}(wg)
+	}(wg, mut)
 
 	wg.Wait()
 
