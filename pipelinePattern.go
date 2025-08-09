@@ -6,9 +6,6 @@ import (
 )
 
 func main() {
-
-	wg := &sync.WaitGroup{}
-
 	data := []int{1, 2, 3, 4, 5}
 	input := make(chan int, len(data))
 	for _, d := range data {
@@ -16,32 +13,81 @@ func main() {
 	}
 	close(input)
 
+	var wg sync.WaitGroup
+
+	// double the value
 	wg.Add(1)
 	doubleOutput := make(chan int)
-	go func(wg *sync.WaitGroup) {
+	go func() {
 		defer wg.Done()
 		defer close(doubleOutput)
 		for num := range input {
 			doubleOutput <- num * 2
 		}
-	}(wg)
+	}()
 
+	// square the value
 	wg.Add(1)
 	squareOutput := make(chan int)
-	go func(wg *sync.WaitGroup) {
+	go func() {
 		defer wg.Done()
 		defer close(squareOutput)
 		for num := range doubleOutput {
 			squareOutput <- num * num
 		}
-	}(wg)
+	}()
 
 	for result := range squareOutput {
-		fmt.Println("result : ", result)
+		fmt.Println("Result : ", result)
 	}
 
 	wg.Wait()
 }
+
+// package main
+
+// import (
+// 	"fmt"
+// 	"sync"
+// )
+
+// func main() {
+
+// 	wg := &sync.WaitGroup{}
+
+// 	data := []int{1, 2, 3, 4, 5}
+// 	input := make(chan int, len(data))
+// 	for _, d := range data {
+// 		input <- d
+// 	}
+// 	close(input)
+
+// 	wg.Add(1)
+// 	doubleOutput := make(chan int)
+// 	go func(wg *sync.WaitGroup) {
+// 		defer wg.Done()
+// 		defer close(doubleOutput)
+// 		for num := range input {
+// 			doubleOutput <- num * 2
+// 		}
+// 	}(wg)
+
+// 	wg.Add(1)
+// 	squareOutput := make(chan int)
+// 	go func(wg *sync.WaitGroup) {
+// 		defer wg.Done()
+// 		defer close(squareOutput)
+// 		for num := range doubleOutput {
+// 			squareOutput <- num * num
+// 		}
+// 	}(wg)
+
+// 	for result := range squareOutput {
+// 		fmt.Println("result : ", result)
+// 	}
+
+// 	wg.Wait()
+// }
 
 // package main
 
