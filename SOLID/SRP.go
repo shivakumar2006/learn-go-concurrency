@@ -1,6 +1,8 @@
 // // SOLID
 
-// // S := Single Responsibility Principal
+// // S := Single Responsibility Principle
+
+// A class (or module) should have only one reason to change; it should do one job.
 
 package main
 
