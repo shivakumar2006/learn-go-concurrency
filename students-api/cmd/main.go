@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"students-api/internal/config"
+	"students-api/internal/http/student"
 	"syscall"
 	"time"
 )
@@ -21,9 +22,7 @@ func main() {
 
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to student api"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 
 	// setup server
 	server := http.Server{
@@ -41,8 +40,8 @@ func main() {
 
 	go func() {
 		err := server.ListenAndServe()
-		if err != nil {
-			log.Fatal("failed to start server")
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal("failed to start server", err)
 		}
 	}()
 
