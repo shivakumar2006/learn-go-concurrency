@@ -60,6 +60,7 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		if id == "" {
 			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("id is required")))
+			return
 		}
 
 		slog.Info("getting a student", slog.String("id", id))
@@ -80,5 +81,19 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 		}
 
 		response.WriteJSON(w, http.StatusOK, student)
+	}
+}
+
+func GetAll(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("getting all student data")
+
+		students, err := storage.GetStudents()
+		if err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, students)
 	}
 }
