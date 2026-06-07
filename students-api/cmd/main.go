@@ -9,8 +9,11 @@ import (
 	"os/signal"
 	"students-api/internal/config"
 	"students-api/internal/http/student"
+	"students-api/internal/storage/postgres"
 	"syscall"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func main() {
@@ -18,11 +21,18 @@ func main() {
 	cfg := config.MustLoad()
 
 	// setup db
+	storage, err := postgres.New(*cfg)
+	if err != nil {
+		log.Fatal("Failed to start db : ", err)
+	}
+
+	slog.Info("Storage initialized", slog.String("env", cfg.Env), slog.String("version", "1.0.0"))
+
 	// add router
 
-	router := http.NewServeMux()
+	router := chi.NewRouter()
 
-	router.HandleFunc("POST /api/students", student.New())
+	router.Post("/api/students", student.New(storage))
 
 	// setup server
 	server := http.Server{

@@ -1,5 +1,5 @@
 *.env
 *.test 
 *.out 
-storage
+/storage
 /config
