@@ -141,3 +141,30 @@ func Update(storage storage.Storage) http.HandlerFunc {
 
 	}
 }
+
+func Delete(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		if id == "" {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("id is required")))
+			return
+		}
+
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		student, err := storage.DeleteStudent(intId)
+		if err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, map[string]interface{}{
+			"message": "student delete successfully",
+			"id":      student,
+		})
+	}
+}

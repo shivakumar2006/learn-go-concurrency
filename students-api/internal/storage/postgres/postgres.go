@@ -50,7 +50,7 @@ func (d *Database) CreateStudent(name string, email string, age int) (int64, err
 	`, name, email, age).Scan(&id)
 
 	if err != nil {
-		return 0, nil
+		return 0, err
 	}
 
 	return id, nil
@@ -117,4 +117,19 @@ func (d *Database) UpdateStudent(id int64, name, email string, age int) (int64, 
 	}
 
 	return updatedId, nil
+}
+
+func (d *Database) DeleteStudent(id int64) (int64, error) {
+	var deleteId int64
+	err := d.Db.QueryRow(`
+		DELETE FROM students
+		WHERE id = $1
+		RETURNING id
+	`, id).Scan(&deleteId)
+
+	if err != nil {
+		return 0, fmt.Errorf("error while deleting the student data : %w", err)
+	}
+
+	return deleteId, nil
 }
