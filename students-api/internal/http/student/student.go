@@ -7,10 +7,12 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"students-api/internal/storage"
 	"students-api/internal/types"
 	"students-api/internal/utils/response"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -50,5 +52,33 @@ func New(storage storage.Storage) http.HandlerFunc {
 		slog.Info("user created succesfully", slog.String("userId", fmt.Sprint(lastId)))
 
 		response.WriteJSON(w, http.StatusOK, map[string]int64{"id": lastId})
+	}
+}
+
+func GetById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		if id == "" {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("id is required")))
+		}
+
+		slog.Info("getting a student", slog.String("id", id))
+
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		student, err := storage.GetStudentById(intId)
+		if err != nil {
+
+			slog.Error("error while fetching student", slog.String("id", id), slog.String("error", err.Error()))
+
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, student)
 	}
 }

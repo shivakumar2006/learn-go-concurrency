@@ -2,7 +2,9 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 	"students-api/internal/config"
+	"students-api/internal/types"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -52,4 +54,23 @@ func (d *Database) CreateStudent(name string, email string, age int) (int64, err
 	}
 
 	return id, nil
+}
+
+func (d *Database) GetStudentById(id int64) (types.Student, error) {
+	var student types.Student
+	err := d.Db.QueryRow(`
+		SELECT id, name, email, age
+		FROM students 
+		WHERE id = $1
+		LIMIT 1
+	`, id).Scan(&student.Id, &student.Name, &student.Email, &student.Age)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return types.Student{}, fmt.Errorf("No student found with id : %s", fmt.Sprint(id))
+		}
+		return types.Student{}, fmt.Errorf("Query error : %w", err)
+	}
+
+	return student, nil
 }

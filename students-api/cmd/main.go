@@ -33,6 +33,7 @@ func main() {
 	router := chi.NewRouter()
 
 	router.Post("/api/students", student.New(storage))
+	router.Get("/api/students/{id}", student.GetById(storage))
 
 	// setup server
 	server := http.Server{
