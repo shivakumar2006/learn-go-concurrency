@@ -35,6 +35,7 @@ func main() {
 	router.Post("/api/students", student.New(storage))
 	router.Get("/api/students/{id}", student.GetById(storage))
 	router.Get("/api/students", student.GetAll(storage))
+	router.Put("/api/students/{id}", student.Update(storage))
 
 	// setup server
 	server := http.Server{

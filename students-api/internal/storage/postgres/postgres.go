@@ -102,3 +102,19 @@ func (d *Database) GetStudents() ([]types.Student, error) {
 
 	return students, nil
 }
+
+func (d *Database) UpdateStudent(id int64, name, email string, age int) (int64, error) {
+	var updatedId int64
+	err := d.Db.QueryRow(`
+		UPDATE students
+		SET name = $1, email = $2, age = $3
+		WHERE id = $4
+		RETURNING id
+	`, name, email, age, id).Scan(&updatedId)
+
+	if err != nil {
+		return 0, fmt.Errorf("error while updating student data : %w", err)
+	}
+
+	return updatedId, nil
+}

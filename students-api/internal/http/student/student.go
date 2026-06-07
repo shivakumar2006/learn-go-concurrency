@@ -97,3 +97,47 @@ func GetAll(storage storage.Storage) http.HandlerFunc {
 		response.WriteJSON(w, http.StatusOK, students)
 	}
 }
+
+func Update(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		if id == "" {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("id is required:")))
+			return
+		}
+
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		var student types.Student
+		if err := json.NewDecoder(r.Body).Decode(&student); err != nil {
+			if errors.Is(err, io.EOF) {
+				response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("empty body")))
+				return
+			}
+			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			return
+		}
+
+		if err := validator.New().Struct(student); err != nil {
+			validateErrs := err.(validator.ValidationErrors)
+			response.WriteJSON(w, http.StatusBadRequest, response.ValidateError(validateErrs))
+			return
+		}
+
+		updatedId, err := storage.UpdateStudent(intId, student.Name, student.Email, student.Age)
+		if err != nil {
+			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+			return
+		}
+
+		response.WriteJSON(w, http.StatusOK, map[string]interface{}{
+			"message": "student updated successfully",
+			"id":      updatedId,
+		})
+
+	}
+}
