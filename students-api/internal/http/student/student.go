@@ -86,15 +86,36 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 
 func GetAll(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		pageStr := r.URL.Query().Get("page")
+		limitStr := r.URL.Query().Get("limit")
+
+		page := 1
+		limit := 10
+
+		if pageStr == "" {
+			page, _ = strconv.Atoi(pageStr)
+		}
+
+		if limitStr == "" {
+			limit, _ = strconv.Atoi(limitStr)
+		}
+
+		offset := (page - 1) * limit
+
 		slog.Info("getting all student data")
 
-		students, err := storage.GetStudents()
+		students, err := storage.GetStudents(limit, offset)
 		if err != nil {
 			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 			return
 		}
 
-		response.WriteJSON(w, http.StatusOK, students)
+		response.WriteJSON(w, http.StatusOK, map[string]interface{}{
+			"page":    page,
+			"limit":   limit,
+			"student": students,
+		})
 	}
 }
 
